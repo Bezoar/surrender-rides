@@ -39,8 +39,7 @@ class LoginRequiredHandler(BaseHandler):
     def get(self):
         continue_url, = self.request.get('continue', allow_multiple=True)
         self.redirect(users.create_login_url(dest_url=continue_url))
-
-
+        
 class RegisterBaseHandler(BaseHandler):
     """
     Base class for handlers with registration and login forms.
@@ -796,7 +795,7 @@ class RegisterHandler(BaseHandler):
                                                     user_id=user[1].get_id(),
                                                     token=self.user_model.create_auth_token(user[1].get_id()),
                                                     _full=True)
-
+                    logging.info("*** confirmation_url is %s" % confirmation_url)
                     # load email's template
                     template_val = {
                         "app_name": self.app.config.get('app_name'),

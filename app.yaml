@@ -1,5 +1,5 @@
-application: sandengine
-version: dev
+application: surrender-rides
+version: 1
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -38,6 +38,7 @@ handlers:
 - url: /admin.*
   script: main.app
   login: admin
+  secure: always
 
 - url: /favicon\.ico
   mime_type: image/vnd.microsoft.icon
@@ -55,65 +56,78 @@ handlers:
 
 - url: /(robots\.txt|humans\.txt|sitemap\.xml|crossdomain\.xml)
   script: main.app
+  secure: always
 
 - url: /boilerplate/css
   mime_type: text/css
   static_dir: bp_includes/static/css
+  secure: always
 
 - url: /boilerplate/js
   mime_type: text/javascript
   static_dir: bp_includes/static/js
+  secure: always
 
 - url: /boilerplate/img/(.*\.(gif|png|jpg))
   static_files: bp_includes/static/img/\1
   upload: bp_includes/static/img/(.*\.(gif|png|jpg))
+  secure: always
 
 - url: /(\w*)/css/(.*\.css)$
   mime_type: text/css
   static_files: bp_content/themes/\1/static/css/\2
   upload: bp_content/themes/(\w*)/static/css/(.*\.css)$
+  secure: always
 
 - url: /(\w*)/js/(.*\.js)$
   mime_type: text/javascript
   static_files: bp_content/themes/\1/static/js/\2
   upload: bp_content/themes/(\w*)/static/js/(.*\.js)$
+  secure: always
 
 - url: /(\w*)/img/(.*\.(gif|png|jpg|jpeg))
   static_files: bp_content/themes/\1/static/img/\2
   upload: bp_content/themes/(\w*)/static/img/(.*\.(gif|png|jpg|jpeg))
+  secure: always
 
 - url: /(\w*)/fonts/(.*\.eot)$
   mime_type: application/vnd.ms-fontobject
   static_files: bp_content/themes/\1/static/fonts/\2
   upload: bp_content/themes/(\w*)/static/fonts/(.*\.eot)
+  secure: always
 
 - url: /(\w*)/fonts/(.*\.otf)$
   mime_type: font/opentype
   static_files: bp_content/themes/\1/static/fonts/\2
   upload: bp_content/themes/(\w*)/static/fonts/(.*\.otf)
+  secure: always
 
 - url: /(\w*)/fonts/(.*\.ttf)$
   mime_type: application/x-font-ttf
   static_files: bp_content/themes/\1/static/fonts/\2
   upload: bp_content/themes/(\w*)/static/fonts/(.*\.ttf)
+  secure: always
 
 - url: /(\w*)/fonts/(.*\.woff)$
   mime_type: application/x-font-woff
   static_files: bp_content/themes/\1/static/fonts/\2
   upload: bp_content/themes/(\w*)/static/fonts/(.*\.woff)
+  secure: always
 
 - url: /(\w*)/fonts/(.*\.svg)$
   mime_type: image/svg+xml
   static_files: bp_content/themes/\1/static/fonts/\2
   upload: bp_content/themes/(\w*)/static/fonts/(.*\.svg)
+  secure: always
 
 - url: /taskqueue-send-email.*
   script: main.app
   login: admin
+  secure: always
 
 - url: /.*
   script: main.app
-#  secure: always
+  secure: always
 
 libraries:
 - name: jinja2

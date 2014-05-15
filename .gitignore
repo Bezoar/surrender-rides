@@ -1,3 +1,5 @@
+bp_content/themes/default/config/common.py
+
 *.py[co]
 
 # Packages

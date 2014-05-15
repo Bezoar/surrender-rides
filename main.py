@@ -23,7 +23,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'bp_includes/external
 
 import webapp2
 
-
 from bp_includes.lib.error_handler import handle_error
 from bp_includes import config as config_boilerplate
 
@@ -35,7 +34,6 @@ import config as config_theme
 from bp_admin import routes as routes_admin
 from bp_includes import routes as routes_boilerplate
 import routes as routes_theme
-
 
 webapp2_config = config_boilerplate.config
 webapp2_config.update(config_theme.config)
