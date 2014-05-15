@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [Google App Engine Boilerplate](http://appengine.beecoss.com) [![Build Status](https://secure.travis-ci.org/coto/gae-boilerplate.png)](http://travis-ci.org/coto/gae-boilerplate)
 ==============================
 
@@ -242,3 +243,9 @@ these [amazing people](https://github.com/coto/gae-boilerplate/graphs/contributo
 + [f1shear](https://github.com/f1shear)
 + [presveva](https://github.com/presveva)
 + [Sorced-Jim](https://github.com/sorced-Jim)
+=======
+surrender-rides
+===============
+
+Surrender event rideshare site (forked from gae-boilerplate)
+>>>>>>> 4929808b121d8a45eeac1193d585976741802d34
