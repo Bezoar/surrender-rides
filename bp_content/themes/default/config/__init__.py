@@ -3,6 +3,7 @@ This configuration file loads environment's specific config settings for the app
 It takes precedence over the config located in the boilerplate package.
 """
 
+import logging
 import os
 
 from google.appengine.api import app_identity
@@ -22,7 +23,10 @@ env_id = (os.environ["SERVER_SOFTWARE"]
 http_host = (os.environ["HTTP_HOST"]
              if "HTTP_HOST" in os.environ else "")
 
-from config.common import config
+try:
+    from config.common import config
+except:
+    logging.error("Common config not found. If you're using a clone of the surrender-rides repository, config.common is not checked in, because it contains sensitive information such as private keys. Create a copy of bp_includes/config.py into common.py in this directory, then edit the values to suit your installation.")
 
 if app_id.startswith("dev~") or env_id.startswith("Dev"):
     from config.localhost import config as site_config
