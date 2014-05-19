@@ -60,7 +60,7 @@
     </div>
 
     <div id="dialog-form" title="Send message">
-      <p class="validateTips">All form fields are required.</p>
+      <p class="validateTips">Sent messages will contain your email address.</p>
  
         <form id="message_form">
           <fieldset>
@@ -148,7 +148,7 @@
         }); <!-- $().ready() -->
 
         function open_message_form(user_name, user_key) {
-            $( ".validateTips" ).text("All form fields are required.");
+            $( ".validateTips" ).text("Sent messages will contain your email address.");
             $( "#dest_name" ).val(user_name);
             $( "#dest_id" ).val(user_key);
             $( "#dialog-form" ).attr("title", "Send message to "+user_name);

@@ -418,7 +418,7 @@ class SendMessageHandler(BaseHandler):
         csrf_token = self.request.get('_csrf_token', '')
         
         try:
-            logging.info("*** subject: %s / message: %s / dest_id: %s / dest_name: %s" % (subj, msg, dest_id, dest_name))
+            logging.debug("*** subject: %s / message: %s / dest_id: %s / dest_name: %s" % (subj, msg, dest_id, dest_name))
             if csrf_token != generate_csrf_token():
                 raise ValueError("CSRF token could not be confirmed. Cannot send message.")
             source_u = self.user_model.get_by_id(int(self.user_id))
@@ -429,14 +429,14 @@ class SendMessageHandler(BaseHandler):
                 raise ValueError("Could not find destination user.")
             dest_email = u.email
             email_url = "/taskqueue-send-email/"
-            logging.info("About to post task to send email")
+            msg_body = "Message from %s [%s]:\r\n\r\n%s" % (source_u.get_full_name(), source_u.email, msg)
+            logging.info("msg_body is %s" % msg_body)
             taskqueue.add(url=email_url, params={
                 'to': dest_name + (" <%s>" % dest_email),
                 'subject': "[Surrender Rideshare] "+subj,
-                'body': "Message from %s <%s>:\n\n%s" % (source_u.get_full_name(), source_u.email, msg),
+                'body': msg_body,
                 'sender': "%s via Surrender Rideshare <%s>" % (source_u.get_full_name(), source_u.email),
             })
-            logging.info("/message/send done")
         except Exception, e:
             logging.error("Exception when trying to send message: (%s) %s" % (e.__class__.__name__, e))
             self.error(500)
