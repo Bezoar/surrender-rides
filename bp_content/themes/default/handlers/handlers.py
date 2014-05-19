@@ -376,3 +376,30 @@ class EditProfileHandler(BaseHandler):
         f.tz.choices = self.tz
         return f
 
+class ListSharesHandler(BaseHandler):
+    @user_required
+    def get(self):
+        params = {}
+        users = [u for u in self.user_model.query().fetch(None) if u.activated]
+        params['users'] = users
+        return self.render_template('share_list.html', **params)
+
+class ViewShareDetailHandler(BaseHandler):
+    @user_required
+    def get(self):
+        params = {}
+        target_user_id = int(self.request.get('user_id', '0'))
+        if not target_user_id:
+            message = _('User id unavailable. Please try again later.')
+            self.add_message(message, 'error')
+            return self.redirect_to('show-listings')
+        if int(self.user_id) == target_user_id:
+            # Viewing logged-in user's profile. Go to profile edit page instead.
+            return self.redirect_to('edit-profile')
+        u = self.user_model.get_by_id(target_user_id)
+        if not u:
+            message = _('Could not find user. Please try again later.')
+            self.add_message(message, 'error')
+            return self.redirect_to('show-listings')
+        params['target_user'] = u
+        return self.render_template('share_detail.html', **params)

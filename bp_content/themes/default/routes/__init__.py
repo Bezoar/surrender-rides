@@ -15,6 +15,8 @@ _routes = [
     RedirectRoute('/settings/delete_account', handlers.DeleteAccountHandler, name='delete-account', strict_slash=True),
     RedirectRoute('/contact/', handlers.ContactHandler, name='contact', strict_slash=True),
     RedirectRoute('/settings/profile', handlers.EditProfileHandler, name='edit-profile', strict_slash=True),
+    RedirectRoute('/shares/list', handlers.ListSharesHandler, name='show-listings', strict_slash=True),
+    RedirectRoute('/shares/view', handlers.ViewShareDetailHandler, name='view-listing', strict_slash=True),
 ]
 
 def get_routes():

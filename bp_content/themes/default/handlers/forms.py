@@ -71,6 +71,7 @@ def outbound_date_range_check(form, field):
         
 class EditProfileForm(UsernameMixin, NameMixin):
     DT_FORMAT = '%m/%d/%Y %I:%M %p' # for use with jquery-ui
+    
     country = fields.SelectField(_('Country'), choices=[])
     tz = fields.SelectField(_('Timezone'), choices=[])
     city = fields.TextField(_('City'))
@@ -84,4 +85,6 @@ class EditProfileForm(UsernameMixin, NameMixin):
     offers = fields.TextAreaField(_('Offers'))
     offers_taken = fields.BooleanField(_('Offers taken'))
     notes = fields.TextAreaField(_('Notes'))
+
+    # No methods, just field definitions
     pass

@@ -61,14 +61,70 @@ class User(User):
     tz = ndb.StringProperty(default='America/Los_Angeles')
     #: Account activation verifies email
     activated = ndb.BooleanProperty(default=False)
-
+    
     def put(self):
         if not self.country:
             self.country = 'US'
         if not self.tz:
             self.tz = 'America/Los_Angeles'
         super(User, self).put()
+
+    def get_full_name(self):
+        rv = ""
+        if self.name and self.last_name:
+            rv = self.name + " " + self.last_name
+        elif self.name:
+            rv = self.name
+        else:
+            rv = self.last_name
+        return rv
         
+    def get_city_state(self):
+        rv = ""
+        if self.city and self.state:
+            rv = self.city + ", " + self.state
+        elif self.city:
+            rv = self.city
+        else:
+            rv = self.state
+        return rv
+
+    def get_needs(self):
+        rv = self.needs
+        if self.needs_met and rv:
+            rv = "[Needs met: %s]" % rv
+        return rv
+
+    def get_offers(self):
+        rv = self.offers
+        if self.offers_taken and rv:
+            rv = "[Offers granted/accepted: %s]" % rv
+        return rv
+
+    def format_inbound_departure_dt(self):
+        rv = ""
+        if self.inbound_departure_dt:
+            rv = self.inbound_departure_dt.strftime("%m/%d %I:%M%p")
+        return rv
+
+    def format_inbound_arrival_dt(self):
+        rv = ""
+        if self.inbound_arrival_dt:
+            rv = self.inbound_arrival_dt.strftime("%m/%d %I:%M%p")
+        return rv
+
+    def format_outbound_departure_dt(self):
+        rv = ""
+        if self.outbound_departure_dt:
+            rv = self.outbound_departure_dt.strftime("%m/%d %I:%M%p")
+        return rv
+
+    def format_outbound_arrival_dt(self):
+        rv = ""
+        if self.outbound_arrival_dt:
+            rv = self.outbound_arrival_dt.strftime("%m/%d %I:%M%p")
+        return rv
+    
     @classmethod
     def get_by_email(cls, email):
         """Returns a user object based on an email.

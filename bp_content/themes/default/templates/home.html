@@ -3,15 +3,17 @@
 {% block header_title_lead %}{% endblock %}
 
 {% block content %}
-
     {% if user_id %}
     <div class="hero-unit home_bp">
         <h1>
             Surrender Ride and Resource Share
         </h1>
         <p>
-            {% trans %}Use this site to coordinate rides to/from the Surrender event,<br/>and express material needs or offer to share materials<br/>(tents, equipment, etc.) while you're at Surrender.{% endtrans %}
+            Make sure your profile contains all the information about your ride/resource needs and offers,<br/>then click "Show ride/resource listings" to see everyone else's listings.
         </p>
+        <div style="margin-left: auto; margin-right: auto;">
+	  <button id="btn_editProfile" class="home_button" onclick="document.location.href = '{{ uri_for("edit-profile") }}'">Edit&nbsp;your&nbsp;profile</button>&nbsp;&nbsp;<button id="btn_showList" onclick="document.location.href = '{{ uri_for("show-listings") }}'"" class="home_button">Show&nbsp;ride/resource&nbsp;listings</button>
+	</div>
     </div>
     {% else %}
     <div class="row">
@@ -22,6 +24,9 @@
                 </h1>
                 <p>
 	          {% trans %}Use this site to coordinate rides to/from the Surrender event,<br/>and express material needs or offer to share materials<br/>(tents, equipment, etc.) while you're at Surrender.{% endtrans %}
+                </p>
+                <p>
+	          {% trans %}Sign in, or sign up, using the forms to the right.{% endtrans %}
                 </p>
             </div>
         </div>
@@ -129,6 +134,9 @@
                 goodPassText: '{% trans %}Good Password{% endtrans %}',
                 strongPassText: '{% trans %}Secure Password{% endtrans %}'
             });
+
+            $("#btn_editProfile").button();
+            $("#btn_showList").button();
         });
     </script>
 {% endblock %}
