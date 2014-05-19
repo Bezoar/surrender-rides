@@ -21,7 +21,8 @@
     {% endif %}
     <link rel="stylesheet" href="/boilerplate/css/boilerplate.min.css">
     <link rel="stylesheet" href="/{{ theme }}/css/style.css">
-    <link href="/{{ theme }}/css/jquery-ui-1.10.4.custom.css" rel="stylesheet">
+
+<link href="/{{ theme }}/css/jquery-ui-1.10.4.custom.css" rel="stylesheet">
     {% block mediaCSS %}{% endblock %}
 
     {{ google_analytics_code }}
@@ -122,7 +123,6 @@
                                                     <a href="{{ uri_for("password-reset") }}">
                                                         {% trans %}Forgot your password?{% endtrans %}</a>
                                                 </div>
-                                                {{ macros.federated_login(provider_info, provider_uris, enable_federated_login) }}
                                             </fieldset>
                                         </form>
                                     </div>
