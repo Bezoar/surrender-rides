@@ -1,0 +1,69 @@
+{% extends base_layout %}
+
+{% block header_title_lead %}{% endblock %}
+{% block mediaCSS %}
+    <link href="/{{ theme }}/css/jquery.dataTables.css" rel="stylesheet">
+    <link href="/{{ theme }}/css/dataTables.jqueryui.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    {% if user_id %}
+    <div class="site_page">
+        <h2>
+            Ride/Resource share listing
+        </h2>
+        <p>
+        <table id="share_list" class="display">
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>City/State</th>
+	      <th>Arriving</th>
+	      <th>Leaving</th>
+	      <th>Offers</th>
+	      <th>Needs</th>
+	      <th>Contact</th>
+	    </tr>
+	  </thead>
+	  <tfoot>
+	    <tr>
+	      <th>Name</th>
+	      <th>City/State</th>
+	      <th>Arriving</th>
+	      <th>Leaving</th>
+	      <th>Offers</th>
+	      <th>Needs</th>
+	      <th>Contact</th>
+	    </tr>
+	  </tfoot>
+	  <tbody>
+	    {% for user in users %}
+	    <tr>
+	      <td><a href="{{ uri_for('view-listing', user_id=user.key.id()) }}">{{ user.get_full_name() }}</a></td>
+	      <td>{{ user.get_city_state() }}</td>
+	      <td>{{ user.format_inbound_arrival_dt() }}</td>
+	      <td>{{ user.format_outbound_departure_dt() }}</td>
+	      <td>{{ user.get_offers() }}</td>
+	      <td>{{ user.get_needs() }}</td>
+	      <td>[Contact]</td>
+	    </tr>
+	    {% endfor %}
+          </tbody>
+	</table>
+        </p>
+    </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block mediaJS %}
+    <script>
+        $().ready(function() {
+            $(document).ready(function() {
+                $('#share_list').dataTable();
+            });
+        });
+    </script>
+{% endblock %}
+

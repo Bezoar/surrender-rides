@@ -1,0 +1,48 @@
+{% extends base_layout %}
+
+{% block header_title_lead %}{% endblock %}
+{% block mediaCSS %}
+    <link href="/{{ theme }}/css/jquery.dataTables.css" rel="stylesheet">
+    <link href="/{{ theme }}/css/dataTables.jqueryui.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    {% if user_id %}
+    <div class="site_page">
+        <h2>
+            Listing for {{ target_user.get_full_name() }}
+        </h2>
+        <p>
+        <div>
+          <table class="share_detail">
+	    <tbody>
+	      <tr><td class="share_detail_col1">City/state</td><td>{{ target_user.get_city_state() }}</td></tr>
+	      <tr><td class="share_detail_col1">Departing for Surrender</td><td>{{ target_user.format_inbound_departure_dt() }}</td></tr>
+	      <tr><td class="share_detail_col1">Arriving at Surrender</td><td>{{ target_user.format_inbound_arrival_dt() }}</td></tr>
+	      <tr><td class="share_detail_col1">Departing from Surrender</td><td>{{ target_user.format_outbound_departure_dt() }}</td></tr>
+	      <tr><td class="share_detail_col1">Arriving home</td><td>{{ target_user.format_outbound_arrival_dt() }}</td></tr>
+	      <tr><td class="share_detail_col1">Offers</td><td>{{ target_user.offers }}</td></tr>
+	      <tr><td class="share_detail_col1">Offers granted/accepted?</td><td>{{ "Yes" if target_user.offers_taken else "No" }}</td></tr>
+	      <tr><td class="share_detail_col1">Needs</td><td>{{ target_user.needs }}</td></tr>
+	      <tr><td class="share_detail_col1">Needs met?</td><td>{{ "Yes" if target_user.needs_met else "No" }}</td></tr>
+	      <tr><td class="share_detail_col1">Notes</td><td>{{ target_user.notes }}</td></tr>
+            </tbody>
+          </table>
+	</div>
+        </p>
+	<p style="margin-left: auto; margin-right: auto;">
+	<button id="btn_contactUser">Contact this user</button>
+	</p>
+    </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block mediaJS %}
+    <script>
+        $().ready(function() {
+            $("#btn_contactUser").button();
+        });
+    </script>
+{% endblock %}
