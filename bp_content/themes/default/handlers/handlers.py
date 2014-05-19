@@ -23,6 +23,7 @@ import bp_includes.lib.i18n as i18n
 from bp_includes.lib.basehandler import BaseHandler
 from bp_includes.lib.decorators import user_required
 from bp_includes.lib import captcha, utils
+from bp_includes.lib.jinja_bootstrap import generate_csrf_token
 import bp_includes.models as models_boilerplate
 import forms as forms
 
@@ -382,6 +383,7 @@ class ListSharesHandler(BaseHandler):
         params = {}
         users = [u for u in self.user_model.query().fetch(None) if u.activated]
         params['users'] = users
+        params['logged_in_user_id'] = self.user_id
         return self.render_template('share_list.html', **params)
 
 class ViewShareDetailHandler(BaseHandler):
@@ -403,3 +405,39 @@ class ViewShareDetailHandler(BaseHandler):
             return self.redirect_to('show-listings')
         params['target_user'] = u
         return self.render_template('share_detail.html', **params)
+
+class SendMessageHandler(BaseHandler):
+    @user_required
+    def post(self):
+        subj = self.request.get('subject', '')
+        msg = self.request.get('message', '')
+        dest_id = self.request.get('dest_id', '')
+        dest_name = self.request.get('dest_name', '').strip()
+        if not dest_name:
+            dest_name = "Rideshare User"
+        csrf_token = self.request.get('_csrf_token', '')
+        
+        try:
+            logging.info("*** subject: %s / message: %s / dest_id: %s / dest_name: %s" % (subj, msg, dest_id, dest_name))
+            if csrf_token != generate_csrf_token():
+                raise ValueError("CSRF token could not be confirmed. Cannot send message.")
+            source_u = self.user_model.get_by_id(int(self.user_id))
+            if not source_u:
+                raise ValueError("Could not validate source user.")
+            u = self.user_model.get_by_id(int(dest_id))
+            if not u:
+                raise ValueError("Could not find destination user.")
+            dest_email = u.email
+            email_url = "/taskqueue-send-email/"
+            logging.info("About to post task to send email")
+            taskqueue.add(url=email_url, params={
+                'to': dest_name + (" <%s>" % dest_email),
+                'subject': "[Surrender Rideshare] "+subj,
+                'body': "Message from %s <%s>:\n\n%s" % (source_u.get_full_name(), source_u.email, msg),
+                'sender': "%s via Surrender Rideshare <%s>" % (source_u.get_full_name(), source_u.email),
+            })
+            logging.info("/message/send done")
+        except Exception, e:
+            logging.error("Exception when trying to send message: (%s) %s" % (e.__class__.__name__, e))
+            self.error(500)
+        

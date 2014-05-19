@@ -14,6 +14,9 @@
             Ride/Resource share listing
         </h2>
         <p>
+        To view more detail about a listing, click on the user's name. To send someone a message, click the green circle on the right side.
+        </p>
+        <p>
         <table id="share_list" class="display">
 	  <thead>
 	    <tr>
@@ -38,21 +41,39 @@
 	    </tr>
 	  </tfoot>
 	  <tbody>
-	    {% for user in users %}
+	    {% for u in users %}
+	    {% if ("%s" % u.key.id()) != logged_in_user_id %}
 	    <tr>
-	      <td><a href="{{ uri_for('view-listing', user_id=user.key.id()) }}">{{ user.get_full_name() }}</a></td>
-	      <td>{{ user.get_city_state() }}</td>
-	      <td>{{ user.format_inbound_arrival_dt() }}</td>
-	      <td>{{ user.format_outbound_departure_dt() }}</td>
-	      <td>{{ user.get_offers() }}</td>
-	      <td>{{ user.get_needs() }}</td>
-	      <td>[Contact]</td>
+	      <td><a href="{{ uri_for('view-listing', user_id=u.key.id()) }}">{{ u.get_full_name() }}</a></td>
+	      <td>{{ u.get_city_state() }}</td>
+	      <td>{{ u.format_inbound_arrival_dt() }}</td>
+	      <td>{{ u.format_outbound_departure_dt() }}</td>
+	      <td>{{ u.get_offers() }}</td>
+	      <td>{{ u.get_needs() }}</td>
+	      <td><a href="javascript:open_message_form('{{ u.get_full_name() }}', '{{u.key.id()}}');"><img width="32" height="32" src="/default/img/green-message-circle.png"/></a></td>
 	    </tr>
+	    {% endif %}
 	    {% endfor %}
           </tbody>
 	</table>
         </p>
     </div>
+
+    <div id="dialog-form" title="Send message">
+      <p class="validateTips">All form fields are required.</p>
+ 
+        <form id="message_form">
+          <fieldset>
+            <label for="subject">Subject</label>
+            <input type="text" name="subject" id="subject" class="text ui-widget-content dialog-text ui-corner-all">
+            <label for="message">Message</label>
+            <input type="text" name="message" id="message" value="" class="text ui-widget-content dialog-text ui-corner-all">
+            <input type="hidden" name="dest_name" id="dest_name" value="">
+            <input type="hidden" name="dest_id" id="dest_id" value="">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          </fieldset>
+        </form>
+      </div>
     {% endif %}
 
 {% endblock %}
@@ -60,10 +81,79 @@
 {% block mediaJS %}
     <script>
         $().ready(function() {
-            $(document).ready(function() {
-                $('#share_list').dataTable();
-            });
-        });
+            var subject = $('#subject'),
+                message = $('#message'),
+                allFields = $( [] ).add( subject ).add( message ),
+                tips = $( ".validateTips" );
+
+            $('#share_list').dataTable();
+ 
+            function updateTips( t ) {
+              tips
+                .text( t )
+                .addClass( "ui-state-highlight" );
+              setTimeout(function() {
+                tips.removeClass( "ui-state-highlight", 1500 );
+              }, 500 );
+            }
+
+            function checkLength( o, n, min, max ) {
+              if ( o.val().length > max || o.val().length < min ) {
+                o.addClass( "ui-state-error" );
+                updateTips( "Length of " + n + " must be between " +
+                  min + " and " + max + "." );
+                return false;
+              } else {
+                return true;
+              }
+            }
+
+            function send_message() {
+                $.ajax({type:"POST",
+                        url: "/message/send",
+                        data: $("#message_form").serialize(),
+                        success: function(response, textStatus, jqXHR) {$("#dialog-form").dialog("close");},
+                        error: function(xhr, textStatus, errorThrown) {
+                           updateTips("Could not send the message. Try again in a moment.");
+                        },
+                       });
+            }
+      
+            $( "#dialog-form" ).dialog({
+              autoOpen: false,
+              height: 320,
+              width: 350,
+              modal: true,
+              buttons: {
+                "Send message": function() {
+                  var bValid = true;
+                  allFields.removeClass( "ui-state-error" );
+ 
+                  bValid = bValid && checkLength( subject, "subject", 1, 80 );
+                  bValid = bValid && checkLength( message, "message", 1, 1024 );
+
+                  if (bValid) {
+                      send_message();
+                  }
+                },
+                "Cancel": function() {
+                   $( this ).dialog( "close" );
+                }
+              },
+              close: function() {
+                allFields.val( "" ).removeClass( "ui-state-error" );
+              }
+            }); <!-- dialog -->
+
+        }); <!-- $().ready() -->
+
+        function open_message_form(user_name, user_key) {
+            $( ".validateTips" ).text("All form fields are required.");
+            $( "#dest_name" ).val(user_name);
+            $( "#dest_id" ).val(user_key);
+            $( "#dialog-form" ).attr("title", "Send message to "+user_name);
+            $( "#dialog-form" ).dialog( "open" );
+        }
     </script>
 {% endblock %}
 
