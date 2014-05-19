@@ -429,8 +429,19 @@ class SendMessageHandler(BaseHandler):
                 raise ValueError("Could not find destination user.")
             dest_email = u.email
             email_url = "/taskqueue-send-email/"
-            msg_body = "Message from %s [%s]:\r\n\r\n%s" % (source_u.get_full_name(), source_u.email, msg)
-            logging.info("msg_body is %s" % msg_body)
+            params = {
+                'source_name': source_u.get_full_name(),
+                'source_email': source_u.email,
+                'source_user_id': source_u.key.id(),
+                'subject': subj,
+                'message': msg,
+                'city': i18n.get_city_code(self.request),
+                'region': i18n.get_region_code(self.request).upper(),
+                'country': i18n.get_country_code(self.request),
+                'app_name': self.app.config.get("app_name")
+                }
+            msg_tmpl = "emails/user_message.txt"
+            msg_body = self.jinja2.render_template(msg_tmpl, **params)
             taskqueue.add(url=email_url, params={
                 'to': dest_name + (" <%s>" % dest_email),
                 'subject': "[Surrender Rideshare] "+subj,

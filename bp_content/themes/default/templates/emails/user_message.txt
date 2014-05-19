@@ -1,0 +1,23 @@
+A user of {{app_name}} just sent you a message!
+
+<p><strong>From:</strong> {{source_name}} &lt;{{source_email}}&gt;<br/>
+<strong>Subject:</strong> {{subject}}<br/>
+<strong>Message:</strong><br/>
+{{message}}</p>
+<br/><br/>
+To respond to this message, either:
+<ul>
+<li><a href="mailto:{{source_email}}">Send email</a>, or</li>
+<li><a
+href="https://surrender-rides.appspot.com/shares/view?user_id={{source_user_id}}">Visit
+the sender's rideshare page</a> to view their needs/offers, then click
+"Contact this user".</li>
+</ul>
+<br/><br/>
+If you have any questions, please <a
+href="https://surrender-rides.appspot.com/contact/">contact us</a>.
+
+<hr>
+<strong>City:</strong> {{city}}<br/>
+<strong>Region:</strong> {{region}}<br/>
+<strong>Country:</strong> {{country}}<br/>
