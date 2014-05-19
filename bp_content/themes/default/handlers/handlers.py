@@ -10,6 +10,7 @@
 """
 # standard library imports
 import logging
+from datetime import datetime
 # related third party imports
 import webapp2
 from google.appengine.ext import ndb
@@ -25,7 +26,6 @@ from bp_includes.lib import captcha, utils
 import bp_includes.models as models_boilerplate
 import forms as forms
 
-
 class ContactHandler(BaseHandler):
     """
     Handler for Contact Form
@@ -33,7 +33,7 @@ class ContactHandler(BaseHandler):
 
     def get(self):
         """ Returns a simple HTML for contact form """
-
+        
         if self.user:
             user_info = self.user_model.get_by_id(long(self.user_id))
             if user_info.name or user_info.last_name:
@@ -242,3 +242,137 @@ class DeleteAccountHandler(BaseHandler):
     @webapp2.cached_property
     def form(self):
         return forms.DeleteAccountForm(self)
+
+
+class EditProfileHandler(BaseHandler):
+    """
+    Handler for Edit User Profile
+    """
+
+    @user_required
+    def get(self):
+        """ Returns a simple HTML form for edit profile """
+
+        params = {}
+        if self.user:
+            user_info = self.user_model.get_by_id(long(self.user_id))
+            self.form.username.data = user_info.username
+            self.form.name.data = user_info.name
+            self.form.last_name.data = user_info.last_name
+            self.form.country.data = user_info.country
+            self.form.tz.data = user_info.tz
+
+            # New fields we added
+            for fldname in ('city', 'state',
+                            'inbound_departure_dt',
+                            'inbound_arrival_dt',
+                            'outbound_departure_dt',
+                            'outbound_arrival_dt',
+                            'needs', 'needs_met',
+                            'offers', 'offers_taken',
+                            'notes'):
+                getattr(self.form, fldname).data = getattr(user_info, fldname)
+            
+            providers_info = user_info.get_social_providers_info()
+            if not user_info.password:
+                params['local_account'] = False
+            else:
+                params['local_account'] = True
+            params['used_providers'] = providers_info['used']
+            params['unused_providers'] = providers_info['unused']
+            params['country'] = user_info.country
+            params['tz'] = user_info.tz
+
+        return self.render_template('edit_profile.html', **params)
+
+    def post(self):
+        """ Get fields from POST dict """
+
+        if not self.form.validate():
+            return self.get()
+
+        username = self.form.username.data.lower()
+        name = self.form.name.data.strip()
+        last_name = self.form.last_name.data.strip()
+        country = self.form.country.data
+        tz = self.form.tz.data
+
+        new_values = {
+            'username': username,
+            'name': name,
+            'last_name': last_name,
+            'country': country,
+            'tz': tz,
+
+            # New fields we added
+            'city': self.form.city.data.strip(),
+            'state': self.form.state.data.strip(),
+            'inbound_departure_dt': self.form.inbound_departure_dt.data,
+            'inbound_arrival_dt': self.form.inbound_arrival_dt.data,
+            'outbound_departure_dt': self.form.outbound_departure_dt.data,
+            'outbound_arrival_dt': self.form.outbound_arrival_dt.data,
+            'needs': self.form.needs.data.strip(),
+            'needs_met': self.form.needs_met.data,
+            'offers': self.form.offers.data.strip(),
+            'offers_taken': self.form.offers_taken.data,
+            'notes': self.form.notes.data.strip()
+            }
+
+        try:
+            user_info = self.user_model.get_by_id(long(self.user_id))
+
+            try:
+                message = ''
+                # update username if it has changed and it isn't already taken
+                if username != user_info.username:
+                    user_info.unique_properties = ['username', 'email']
+                    uniques = [
+                        'User.username:%s' % username,
+                        'User.auth_id:own:%s' % username,
+                    ]
+                    # Create the unique username and auth_id.
+                    success, existing = Unique.create_multi(uniques)
+                    if success:
+                        # free old uniques
+                        Unique.delete_multi(
+                            ['User.username:%s' % user_info.username, 'User.auth_id:own:%s' % user_info.username])
+                        # The unique values were created, so we can save the user.
+                        user_info.username = username
+                        user_info.auth_ids[0] = 'own:%s' % username
+                        message += _('Your new username is <strong>{}</strong>').format(username)
+
+                    else:
+                        message += _(
+                            'The username <strong>{}</strong> is already taken. Please choose another.').format(
+                            username)
+                        # At least one of the values is not unique.
+                        self.add_message(message, 'error')
+                        return self.get()
+                for (k, v) in new_values.iteritems():
+                    setattr(user_info, k, v)
+                user_info.put()
+                message += " " + _('Thanks, your settings have been saved.')
+                self.add_message(message, 'success')
+                return self.get()
+
+            except (AttributeError, KeyError, ValueError), e:
+                import traceback
+                logging.error('Error updating profile: (%s) %s' % (e.__class__.__name__, e))
+                logging.error('Traceback: \n'+traceback.format_exc())
+                message = _('Unable to update profile. Please try again later.')
+                self.add_message(message, 'error')
+                return self.get()
+
+        except (AttributeError, TypeError), e:
+            login_error_message = _('Your session has expired.')
+            self.add_message(login_error_message, 'error')
+            self.redirect_to('login')
+
+    @webapp2.cached_property
+    def form(self):
+        f = forms.EditProfileForm(self)
+        logging.info("EditProfileHandler.form is a(n) %s" % f.__class__.__name__)
+        f.country.choices = self.countries_tuple
+        f.tz.choices = self.tz
+        return f
+

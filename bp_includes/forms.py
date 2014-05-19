@@ -10,8 +10,7 @@ from bp_includes.lib import utils
 from webapp2_extras.i18n import lazy_gettext as _
 from webapp2_extras.i18n import ngettext, gettext
 
-FIELD_MAXLENGTH = 50 # intended to stop maliciously long input
-
+FIELD_MAXLENGTH = 80 # intended to stop maliciously long input
 
 class FormTranslations(object):
     def gettext(self, string):
@@ -54,11 +53,11 @@ class UsernameEmailMixin(BaseForm):
 
 
 class NameMixin(BaseForm):
-    name = fields.TextField(_('Name'), [
+    name = fields.TextField(_('First name'), [
         validators.Length(max=FIELD_MAXLENGTH, message=_("Field cannot be longer than %(max)d characters.")),
         validators.regexp(utils.NAME_LASTNAME_REGEXP, message=_(
             "Name invalid. Use only letters and numbers."))])
-    last_name = fields.TextField(_('Last Name'), [
+    last_name = fields.TextField(_('Last name'), [
         validators.Length(max=FIELD_MAXLENGTH, message=_("Field cannot be longer than %(max)d characters.")),
         validators.regexp(utils.NAME_LASTNAME_REGEXP, message=_(
             "Last Name invalid. Use only letters and numbers."))])

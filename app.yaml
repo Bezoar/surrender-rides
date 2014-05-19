@@ -79,6 +79,20 @@ handlers:
   upload: bp_content/themes/(\w*)/static/css/(.*\.css)$
   secure: always
 
+# css/images contains jquery-ui themed sprites and related imagery
+
+- url: /(\w*)/css/images/(.*\.png)$
+  mime_type: image/png
+  static_files: bp_content/themes/\1/static/css/images/\2
+  upload: bp_content/themes/(\w*)/static/css/images/(.*\.png)$
+  secure: always
+
+- url: /(\w*)/css/images/(.*\.gif)$
+  mime_type: image/gif
+  static_files: bp_content/themes/\1/static/css/images/\2
+  upload: bp_content/themes/(\w*)/static/css/images/(.*\.gif)$
+  secure: always
+
 - url: /(\w*)/js/(.*\.js)$
   mime_type: text/javascript
   static_files: bp_content/themes/\1/static/js/\2

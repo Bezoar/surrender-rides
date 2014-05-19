@@ -10,10 +10,25 @@
             <form id="form_edit_profile" action="{{ url|safe }}" method="post">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 {{ macros.field(form.username, label=_("Username"), placeholder=_("Enter your")+" "+_("Username"), class="input-xlarge focused required") }}
-                {{ macros.field(form.name, label=_("Name"), placeholder=_("Enter your")+" "+_("Name"), class="input-xlarge focused") }}
-                {{ macros.field(form.last_name, label=_("Last Name"), placeholder=_("Enter your")+" "+_("Last Name"), class="input-xlarge focused") }}
+                {{ macros.field(form.name, label=_("First name"), placeholder=_("Enter your")+" "+_("first name"), class="input-xlarge focused") }}
+                {{ macros.field(form.last_name, label=_("Last name"), placeholder=_("Enter your")+" "+_("last name"), class="input-xlarge focused") }}
+                {{ macros.field(form.city, label=_("City")) }}
+                {{ macros.field(form.state, label=_("State/Province")) }}
                 {{ macros.field(form.country, label=_("Country")) }}
                 {{ macros.field(form.tz, label=_("Timezone")) }}
+
+                {{ macros.field(form.inbound_departure_dt, label=_("Departing for Surrender"), placeholder="mm/dd/yyyy hh:mm", class="input-xlarge focused") }}
+                {{ macros.field(form.inbound_arrival_dt, label=_("Arriving at Surrender") , placeholder="mm/dd/yyyy hh:mm", class="input-xlarge focused") }}
+                {{ macros.field(form.outbound_departure_dt, label=_("Departing Surrender") , placeholder="mm/dd/yyyy hh:mm", class="input-xlarge focused") }}
+                {{ macros.field(form.outbound_arrival_dt, label=_("Arriving at home") , placeholder="mm/dd/yyyy hh:mm", class="input-xlarge focused") }}
+
+                {{ macros.field(form.needs, label=_("Travel/material needed")) }}
+                {{ macros.field(form.needs_met, label=_("Needs met?")) }}
+                {{ macros.field(form.offers, label=_("Travel/material offered")) }}
+                {{ macros.field(form.offers_taken, label=_("Offers taken?")) }}
+
+                {{ macros.field(form.notes, label=_("Other notes/conditions")) }}
+
                 <div class="control-group">
                     <label class="control-label">{% trans %}Email{% endtrans %}:</label>
                     <div class="controls">
@@ -84,6 +99,19 @@
         {% if tz != "" %}
         $('#tz').find('option[value="{{ tz }}"]').attr("selected", true);
         {% endif %}
+
+        $('#inbound_departure_dt').datetimepicker({
+	    timeFormat: "hh:mm tt"
+        });
+        $('#inbound_arrival_dt').datetimepicker({
+	    timeFormat: "hh:mm tt"
+        });
+        $('#outbound_departure_dt').datetimepicker({
+	    timeFormat: "hh:mm tt"
+        });
+        $('#outbound_arrival_dt').datetimepicker({
+	    timeFormat: "hh:mm tt"
+        });
     });
 </script>
 {% endblock %}
