@@ -75,8 +75,10 @@ class User(User):
             rv = self.name + " " + self.last_name
         elif self.name:
             rv = self.name
-        else:
+        elif self.last_name:
             rv = self.last_name
+        else:
+            rv = "[Anonymous user]"
         return rv
         
     def get_city_state(self):

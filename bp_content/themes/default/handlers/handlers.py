@@ -384,6 +384,14 @@ class ListSharesHandler(BaseHandler):
         users = [u for u in self.user_model.query().fetch(None) if u.activated]
         params['users'] = users
         params['logged_in_user_id'] = self.user_id
+
+        # Check our profile for completeness.
+        me = self.user_model.get_by_id(long(self.user_id))
+        if ((me.get_full_name == '[Anonymous user]') or
+            not me.city or not me.state):
+            warning_msg = 'Please <a href="/settings/profile">complete your profile</a>, so that others can see where you\'re coming from, and what you need/have for the event.'
+            self.add_message(warning_msg, 'error')
+        
         return self.render_template('share_list.html', **params)
 
 class ViewShareDetailHandler(BaseHandler):
@@ -404,6 +412,14 @@ class ViewShareDetailHandler(BaseHandler):
             self.add_message(message, 'error')
             return self.redirect_to('show-listings')
         params['target_user'] = u
+
+        # Check our profile for completeness.
+        me = self.user_model.get_by_id(long(self.user_id))
+        if ((me.get_full_name == '[Anonymous user]') or
+            not me.city or not me.state):
+            warning_msg = 'Please <a href="/settings/profile">complete your profile</a>, so that others can see where you\'re coming from, and what you need/have for the event.'
+            self.add_message(warning_msg, 'error')
+
         return self.render_template('share_detail.html', **params)
 
 class SendMessageHandler(BaseHandler):
