@@ -25,6 +25,7 @@ from bp_includes.lib.decorators import user_required
 from bp_includes.lib import captcha, utils
 from bp_includes.lib.jinja_bootstrap import generate_csrf_token
 import bp_includes.models as models_boilerplate
+from bp_includes.handlers import RegisterBaseHandler
 import forms as forms
 
 class ContactHandler(BaseHandler):
@@ -227,7 +228,6 @@ class DeleteAccountHandler(BaseHandler):
                     self.add_message(msg, 'success')
                     return self.redirect_to('home')
 
-
             except (InvalidAuthIdError, InvalidPasswordError), e:
                 # Returns error message to self.response.write in
                 # the BaseHandler.dispatcher
@@ -377,11 +377,159 @@ class EditProfileHandler(BaseHandler):
         f.tz.choices = self.tz
         return f
 
+class SurrenderRegisterHandler(BaseHandler):
+    """
+    Handler for Sign Up Users
+    """
+
+    def get(self):
+        """ Returns a simple HTML form for create a new user """
+
+        if self.user:
+            self.redirect_to('home')
+        params = {}
+        return self.render_template('surrender_register.html', **params)
+
+    def post(self):
+        """ Get fields from POST dict """
+
+        if not self.form.validate():
+            return self.get()
+        username = self.form.username.data.lower()
+        name = self.form.name.data.strip()
+        last_name = self.form.last_name.data.strip()
+        email = self.form.email.data.lower()
+        password = self.form.password.data.strip()
+        country = self.form.country.data
+        tz = self.form.tz.data
+
+        # Password to SHA512
+        password = utils.hashing(password, self.app.config.get('salt'))
+
+        # Passing password_raw=password so password will be hashed
+        # Returns a tuple, where first value is BOOL.
+        # If True ok, If False no new user is created
+        unique_properties = ['username', 'email']
+        auth_id = "own:%s" % username
+        user = self.auth.store.user_model.create_user(
+            auth_id, unique_properties, password_raw=password,
+            username=username, name=name, last_name=last_name, email=email,
+            ip=self.request.remote_addr, country=country, tz=tz
+        )
+
+        if not user[0]: #user is a tuple
+            if "username" in str(user[1]):
+                message = _(
+                    'Sorry, The username <strong>{}</strong> is already registered.').format(username)
+            elif "email" in str(user[1]):
+                message = _('Sorry, The email <strong>{}</strong> is already registered.').format(email)
+            else:
+                message = _('Sorry, The user is already registered.')
+            self.add_message(message, 'error')
+            return self.redirect_to('register')
+        else:
+            # User registered successfully
+            # But if the user registered using the form, the user has to check their email to activate the account ???
+            try:
+                if not user[1].activated:
+                    # send email
+                    subject = _("%s Account Verification" % self.app.config.get('app_name'))
+                    confirmation_url = self.uri_for("account-activation",
+                                                    user_id=user[1].get_id(),
+                                                    token=self.user_model.create_auth_token(user[1].get_id()),
+                                                    _full=True)
+                    logging.info("*** confirmation_url is %s" % confirmation_url)
+                    # load email's template
+                    template_val = {
+                        "app_name": self.app.config.get('app_name'),
+                        "username": username,
+                        "confirmation_url": confirmation_url,
+                        "support_url": self.uri_for("contact", _full=True)
+                    }
+                    body_path = "emails/account_activation.txt"
+                    body = self.jinja2.render_template(body_path, **template_val)
+
+                    email_url = self.uri_for('taskqueue-send-email')
+                    taskqueue.add(url=email_url, params={
+                        'to': str(email),
+                        'subject': subject,
+                        'body': body,
+                    })
+
+                    message = _('You were successfully registered. '
+                                'Please check your email to activate your account.')
+                    self.add_message(message, 'success')
+                    return self.redirect_to('home')
+
+                # If the user didn't register using registration form ???
+                db_user = self.auth.get_user_by_password(user[1].auth_ids[0], password)
+
+                # Check Twitter association in session
+                twitter_helper = twitter.TwitterAuth(self)
+                twitter_association_data = twitter_helper.get_association_data()
+                if twitter_association_data is not None:
+                    if models.SocialUser.check_unique(user[1].key, 'twitter', str(twitter_association_data['id'])):
+                        social_user = models.SocialUser(
+                            user=user[1].key,
+                            provider='twitter',
+                            uid=str(twitter_association_data['id']),
+                            extra_data=twitter_association_data
+                        )
+                        social_user.put()
+
+                #check Facebook association
+                fb_data = json.loads(self.session['facebook'])
+                if fb_data is not None:
+                    if models.SocialUser.check_unique(user.key, 'facebook', str(fb_data['id'])):
+                        social_user = models.SocialUser(
+                            user=user.key,
+                            provider='facebook',
+                            uid=str(fb_data['id']),
+                            extra_data=fb_data
+                        )
+                        social_user.put()
+
+                #check LinkedIn association
+                li_data = json.loads(self.session['linkedin'])
+                if li_data is not None:
+                    if models.SocialUser.check_unique(user.key, 'linkedin', str(li_data['id'])):
+                        social_user = models.SocialUser(
+                            user=user.key,
+                            provider='linkedin',
+                            uid=str(li_data['id']),
+                            extra_data=li_data
+                        )
+                        social_user.put()
+
+                message = _('Welcome <strong>{}</strong>, you are now logged in.').format(username)
+                self.add_message(message, 'success')
+                return self.redirect_to('home')
+            except (AttributeError, KeyError), e:
+                logging.error('Unexpected error creating the user %s: %s' % (username, e ))
+                message = _('Unexpected error creating the user %s' % username)
+                self.add_message(message, 'error')
+                return self.redirect_to('home')
+
+    @webapp2.cached_property
+    def form(self):
+        logging.info("SurrenderRegisterHandler.form()")
+        try:
+            f = forms.SurrenderRegisterForm(self)
+            f.country.choices = self.countries_tuple
+            f.tz.choices = self.tz
+            logging.info("SurrenderRegisterHandler.form() returning %s" % f)
+            return f
+        except Exception, e:
+            logging.error("Exception while creating form object for registration: (%s) %s"
+                          % (e.__class__.__name__, e))
+            raise
+
 class ListSharesHandler(BaseHandler):
     @user_required
     def get(self):
         params = {}
-        users = [u for u in self.user_model.query().fetch(None) if u.activated]
+        users = [u for u in self.user_model.query().fetch(None)
+                 if (u.activated and u.get_full_name() != '[Anonymous user]')]
         params['users'] = users
         params['logged_in_user_id'] = self.user_id
 
@@ -391,6 +539,7 @@ class ListSharesHandler(BaseHandler):
             not me.city or not me.state):
             warning_msg = 'Please <a href="/settings/profile">complete your profile</a>, so that others can see where you\'re coming from, and what you need/have for the event.'
             self.add_message(warning_msg, 'error')
+            return self.redirect_to('edit-profile')
         
         return self.render_template('share_list.html', **params)
 
@@ -419,7 +568,7 @@ class ViewShareDetailHandler(BaseHandler):
             not me.city or not me.state):
             warning_msg = 'Please <a href="/settings/profile">complete your profile</a>, so that others can see where you\'re coming from, and what you need/have for the event.'
             self.add_message(warning_msg, 'error')
-
+            return self.redirect_to('edit-profile')
         return self.render_template('share_detail.html', **params)
 
 class SendMessageHandler(BaseHandler):
@@ -468,3 +617,22 @@ class SendMessageHandler(BaseHandler):
             logging.error("Exception when trying to send message: (%s) %s" % (e.__class__.__name__, e))
             self.error(500)
         
+
+class SurrenderHomeRequestHandler(RegisterBaseHandler):
+    """
+    Handler to show the home page
+    """
+
+    def get(self):
+        """ Returns a simple HTML form for home """
+        params = {}
+        # If we're logged in but our profile is incomplete,
+        # redirect to the profile edit page.
+        if self.user_id:
+            me = self.user_model.get_by_id(long(self.user_id))
+            if ((me.get_full_name == '[Anonymous user]') or
+                not me.city or not me.state):
+                warning_msg = 'Please <a href="/settings/profile">complete your profile</a>, so that others can see where you\'re coming from, and what you need/have for the event.'
+                self.add_message(warning_msg, 'error')
+                return self.redirect_to('edit-profile')
+        return self.render_template('home.html', **params)

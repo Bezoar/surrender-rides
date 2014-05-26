@@ -1,8 +1,9 @@
-__author__ = 'coto'
+# *-* coding: UTF-8 *-*
 """
 Created on June 10, 2012
 @author: peta15
 """
+__author__ = 'coto'
 
 from datetime import datetime
 from wtforms import fields
@@ -11,7 +12,7 @@ from wtforms import validators, ValidationError
 from webapp2_extras.i18n import lazy_gettext as _
 from webapp2_extras.i18n import ngettext, gettext
 from bp_includes.lib import utils
-from bp_includes.forms import UsernameMixin, NameMixin
+from bp_includes.forms import BaseForm, PasswordConfirmMixin, UsernameMixin
 
 
 FIELD_MAXLENGTH = 80 # intended to stop maliciously long input
@@ -24,20 +25,12 @@ class FormTranslations(object):
     def ngettext(self, singular, plural, n):
         return ngettext(singular, plural, n)
 
-class BaseForm(Form):
-    def __init__(self, request_handler):
-        super(BaseForm, self).__init__(request_handler.request.POST)
-
-    def _get_translations(self):
-        return FormTranslations()
-
-
 class EmailMixin(BaseForm):
     email = fields.TextField(_('Email'), [validators.Required(),
                                           validators.Length(min=8, max=FIELD_MAXLENGTH, message=_(
                                                     "Field must be between %(min)d and %(max)d characters long.")),
                                           validators.regexp(utils.EMAIL_REGEXP, message=_('Invalid email address.'))])
-
+    pass
 
 # ==== Forms ====
 
@@ -68,14 +61,36 @@ def outbound_date_range_check(form, field):
     if (None not in (form.outbound_departure_dt.data, form.outbound_arrival_dt.data)
         and (form.outbound_departure_dt.data > form.outbound_arrival_dt.data)):
         raise ValidationError("Outbound arrival time, if provided, must be after your planned departure from Surrender.")
+
+class RequiredNameMixin(BaseForm):
+    NAME_LASTNAME_REGEXP = "^[0-9a-zA-ZàáâäãåąćęèéêëìíîïłńòóôöõøùúûüÿýżźñçčšžÀÁÂÄÃÅĄĆĘÈÉÊËÌÍÎÏŁŃÒÓÔÖÕØÙÚÛÜŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]*$"
+    FIELD_MAXLENGTH = 80
+    name = fields.TextField(_('First name'), [validators.Required(),
+        validators.Length(max=FIELD_MAXLENGTH, message=_("Field cannot be longer than %(max)d characters.")),
+        validators.regexp(NAME_LASTNAME_REGEXP, message=_(
+            "First name invalid. Use only letters and numbers."))])
+    last_name = fields.TextField(_('Last name'), [validators.Required(),
+        validators.Length(max=FIELD_MAXLENGTH, message=_("Field cannot be longer than %(max)d characters.")),
+        validators.regexp(NAME_LASTNAME_REGEXP, message=_(
+            "Last name invalid. Use only letters and numbers."))])
+    pass
+
+class RequiredCityStateMixin(BaseForm):
+    city = fields.TextField(_('City'), [validators.Required()])
+    state = fields.TextField(_('State/Province'), [validators.Required()])
+    pass
+
+class SurrenderRegisterForm(PasswordConfirmMixin, RequiredCityStateMixin,
+                            UsernameMixin, RequiredNameMixin, EmailMixin):
+    country = fields.SelectField(_('Country'), choices=[])
+    tz = fields.SelectField(_('Timezone'), choices=[])
+    pass
         
-class EditProfileForm(UsernameMixin, NameMixin):
+class EditProfileForm(UsernameMixin, RequiredCityStateMixin, RequiredNameMixin):
     DT_FORMAT = '%m/%d/%Y %I:%M %p' # for use with jquery-ui
     
     country = fields.SelectField(_('Country'), choices=[])
     tz = fields.SelectField(_('Timezone'), choices=[])
-    city = fields.TextField(_('City'))
-    state = fields.TextField(_('State/Province'))
     inbound_departure_dt = fields.DateTimeField(_('Estimated departure for Surrender'), [validators.optional(), inbound_date_range_check], format=DT_FORMAT)
     inbound_arrival_dt = fields.DateTimeField(_('Estimated arrival at Surrender'), [validators.optional()], format=DT_FORMAT)
     outbound_departure_dt = fields.DateTimeField(_('Estimated departure from Surrender'), [validators.optional()], format=DT_FORMAT)
