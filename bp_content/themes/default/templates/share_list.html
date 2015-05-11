@@ -42,7 +42,6 @@
 	  </tfoot>
 	  <tbody>
 	    {% for u in users %}
-	    {% if ("%s" % u.key.id()) != logged_in_user_id %}
 	    <tr>
 	      <td><a href="{{ uri_for('view-listing', user_id=u.key.id()) }}">{{ u.get_full_name() }}</a></td>
 	      <td>{{ u.get_city_state() }}</td>
@@ -52,7 +51,6 @@
 	      <td>{{ u.get_needs() }}</td>
 	      <td><a href="javascript:open_message_form('{{ u.get_full_name() }}', '{{u.key.id()}}');"><img width="32" height="32" src="/default/img/green-message-circle.png"/></a></td>
 	    </tr>
-	    {% endif %}
 	    {% endfor %}
           </tbody>
 	</table>
