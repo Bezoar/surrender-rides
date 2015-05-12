@@ -35,6 +35,13 @@ builtins:
 - remote_api: on #/_ah/remote_api/
 
 handlers:
+
+# Enable the interactive GAE console when deployed (vs just running locally)
+- url: /admin/i.*
+  script: google.appengine.ext.admin.application
+  login: admin
+  secure: always
+
 - url: /admin.*
   script: main.app
   login: admin

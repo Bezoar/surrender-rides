@@ -10,81 +10,72 @@
 
     {% if user_id %}
     <div class="site_page">
-        <h2>
-            Ride/Resource share listing
-        </h2>
-        <p>
-        To view more detail about a listing, click on the user's name. To send someone a message, click the green circle on the right side.
-        </p>
-        <p>
-        <table id="share_list" class="display">
-	  <thead>
-	    <tr>
-	      <th>Name</th>
-	      <th>City/State</th>
-	      <th>Arriving</th>
-	      <th>Leaving</th>
-	      <th>Offers</th>
-	      <th>Needs</th>
-	      <th>Contact</th>
-	    </tr>
-	  </thead>
-	  <tfoot>
-	    <tr>
-	      <th>Name</th>
-	      <th>City/State</th>
-	      <th>Arriving</th>
-	      <th>Leaving</th>
-	      <th>Offers</th>
-	      <th>Needs</th>
-	      <th>Contact</th>
-	    </tr>
-	  </tfoot>
-	  <tbody>
-	    {% for u in users %}
-	    <tr>
-	      <td><a href="{{ uri_for('view-listing', user_id=u.key.id()) }}">{{ u.get_full_name() }}</a></td>
-	      <td>{{ u.get_city_state() }}</td>
-	      <td>{{ u.format_inbound_arrival_dt() }}</td>
-	      <td>{{ u.format_outbound_departure_dt() }}</td>
-	      <td>{{ u.get_offers() }}</td>
-	      <td>{{ u.get_needs() }}</td>
-	      <td><a href="javascript:open_message_form('{{ u.get_full_name() }}', '{{u.key.id()}}');"><img width="32" height="32" src="/default/img/green-message-circle.png"/></a></td>
-	    </tr>
-	    {% endfor %}
-          </tbody>
-	</table>
-        </p>
+      <h2>
+      Ride/Resource share listing
+      </h2>
+      <p>
+      To view more detail about a listing, click on the user's name. To send someone a message, click the green circle on the right side.
+      </p>
+      <p>
+      
+      <table id="new_share_list" class="display">
+	<thead>
+	  <tr>
+	    <th>Name</th>
+	    <th>City/State</th>
+	    <th>Arriving</th>
+	    <th>Leaving</th>
+	    <th>Offers</th>
+	    <th>Needs</th>
+	    <th>Contact</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for u in users %}
+	  <tr>
+	    <td><a href="{{ uri_for('view-listing', user_id=u.key.id()) }}">{{ u.get_full_name() }}</a></td>
+	    <td>{{ u.get_city_state() }}</td>
+	    <td>{{ u.format_inbound_arrival_dt() }}</td>
+	    <td>{{ u.format_outbound_departure_dt() }}</td>
+	    <td>{{ u.get_offers() }}</td>
+	    <td>{{ u.get_needs() }}</td>
+	    <td><a href="javascript:open_message_form('{{ u.get_full_name() }}', '{{u.key.id()}}');"><img width="32" height="32" src="/default/img/green-message-circle.png"/></a></td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+      </p>
     </div>
 
     <div id="dialog-form" title="Send message">
       <p class="validateTips">Sent messages will contain your email address.</p>
- 
-        <form id="message_form">
-          <fieldset>
-            <label for="subject">Subject</label>
-            <input type="text" name="subject" id="subject" class="text ui-widget-content dialog-text ui-corner-all">
-            <label for="message">Message</label>
-            <input type="text" name="message" id="message" value="" class="text ui-widget-content dialog-text ui-corner-all">
-            <input type="hidden" name="dest_name" id="dest_name" value="">
-            <input type="hidden" name="dest_id" id="dest_id" value="">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-          </fieldset>
-        </form>
-      </div>
+      
+      <form id="message_form">
+      <fieldset>
+      <label for="subject">Subject</label>
+      <input type="text" name="subject" id="subject" class="text ui-widget-content dialog-text ui-corner-all">
+      <label for="message">Message</label>
+      <input type="text" name="message" id="message" value="" class="text ui-widget-content dialog-text ui-corner-all">
+      <input type="hidden" name="dest_name" id="dest_name" value="">
+      <input type="hidden" name="dest_id" id="dest_id" value="">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      </fieldset>
+      </form>
+    </div>
+
     {% endif %}
 
 {% endblock %}
 
 {% block mediaJS %}
     <script>
-        $().ready(function() {
+        $(document).ready(function() {
             var subject = $('#subject'),
                 message = $('#message'),
                 allFields = $( [] ).add( subject ).add( message ),
                 tips = $( ".validateTips" );
 
-            $('#share_list').dataTable();
+            $('#new_share_list').DataTable();
  
             function updateTips( t ) {
               tips
