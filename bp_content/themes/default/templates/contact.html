@@ -3,11 +3,14 @@
 {% block title %}
         {% trans %}Contact{% endtrans %} - {{app_name}}
 {% endblock %}
-{% block header_title %}
-        {% trans %}Contact{% endtrans %}
+{% block header_title_lead %}
+<h1>{% trans %}Contact{% endtrans %}</h1>
+<p class="lead contact_top">
+{% trans %}Please fill out this form and tap "Send Message" to send a message to the Surrender organizing team. We will respond as soon as possible, probably within one day.{% endtrans %}
+</p>
 {% endblock %}
-
 {% block content %}
+</p>
     <form id="form_contact" action="{{ url|safe }}" method="post" class="well form-horizontal">
         <fieldset>
             <input type="hidden" name="exception" value="{{ exception|e }}">

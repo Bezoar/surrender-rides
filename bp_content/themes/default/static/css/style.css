@@ -18,6 +18,8 @@
 .site_page h1{font-size:1.6em}
 .site_page p{font-size:1.2em}
 
+.contact_top p{font-weight: bold;}
+
 .share_detail_page { margin-left: auto; margin-right: auto; }
 .share_detail { margin-left: auto; margin-right: auto; }
 .share_detail_col1 { font-weight: bold; text-align: right; padding-right: 10px; }
