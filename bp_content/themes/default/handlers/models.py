@@ -38,9 +38,9 @@ class User(User):
     #: User inbound departure date
     inbound_departure_dt = ndb.DateTimeProperty()
     #: User inbound arrival date
-    inbound_arrival_dt = ndb.DateTimeProperty(default=datetime(2014, 6, 12, 12, 00))
+    inbound_arrival_dt = ndb.DateTimeProperty(default=datetime(2015, 6, 17, 12, 00))
     #: User outbound departure date
-    outbound_departure_dt = ndb.DateTimeProperty(default=datetime(2014, 6, 16, 14, 00))
+    outbound_departure_dt = ndb.DateTimeProperty(default=datetime(2015, 6, 21, 15, 00))
     #: User outbound arrival date
     outbound_arrival_dt = ndb.DateTimeProperty()
 

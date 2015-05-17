@@ -354,7 +354,7 @@ class EditProfileHandler(BaseHandler):
                 user_info.put()
                 message += " " + _('Thanks, your settings have been saved.')
                 self.add_message(message, 'success')
-                return self.get()
+                return self.redirect_to('home')
 
             except (AttributeError, KeyError, ValueError), e:
                 import traceback
@@ -401,6 +401,8 @@ class SurrenderRegisterHandler(BaseHandler):
         email = self.form.email.data.lower()
         password = self.form.password.data.strip()
         country = self.form.country.data
+        city = self.form.city.data
+        state = self.form.state.data
         tz = self.form.tz.data
 
         # Password to SHA512
@@ -414,6 +416,7 @@ class SurrenderRegisterHandler(BaseHandler):
         user = self.auth.store.user_model.create_user(
             auth_id, unique_properties, password_raw=password,
             username=username, name=name, last_name=last_name, email=email,
+            city=city, state=state,
             ip=self.request.remote_addr, country=country, tz=tz
         )
 
