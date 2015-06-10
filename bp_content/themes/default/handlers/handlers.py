@@ -532,7 +532,8 @@ class ListSharesHandler(BaseHandler):
     def get(self):
         params = {}
         users = [u for u in self.user_model.query().fetch(None)
-                 if (u.activated and u.get_full_name() != '[Anonymous user]')]
+                 if (u.activated and u.get_full_name() != '[Anonymous user]')
+                 and (u.get_offers() != '' or u.get_needs() != '')]
         params['users'] = users
         params['logged_in_user_id'] = self.user_id
 
